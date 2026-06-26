@@ -1,0 +1,578 @@
+-- ============================================================
+--   Zeox Hub - Integrated Script (Library + Key System + Main)
+--   Colors: Red & Black | Size: Small | Tabs: 2 Columns
+-- ============================================================
+
+local Library = {}
+
+local Players = game:GetService('Players')
+local RunService = game:GetService('RunService')
+local UserInputService = game:GetService('UserInputService')
+local TweenService = game:GetService('TweenService')
+local CoreGui = game:GetService('CoreGui')
+
+local Mobile = if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then true else false
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer.PlayerGui
+
+function Library:Parent()
+    if not RunService:IsStudio() then
+        return (gethui and gethui()) or CoreGui
+    end
+    return PlayerGui
+end
+
+function Library:Create(Class, Properties)
+    local Creations = Instance.new(Class)
+    for prop, value in Properties do
+        Creations[prop] = value
+    end
+    return Creations
+end
+
+function Library:Draggable(a)
+    local Dragging, DragInput, DragStart, StartPosition = nil, nil, nil, nil
+
+    local function Update(input)
+        local Delta = input.Position - DragStart
+        local pos = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + Delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + Delta.Y)
+        TweenService:Create(a, TweenInfo.new(0.3), {Position = pos}):Play()
+    end
+
+    a.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            Dragging = true
+            DragStart = input.Position
+            StartPosition = a.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    Dragging = false
+                end
+            end)
+        end
+    end)
+
+    a.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            DragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == DragInput and Dragging then
+            Update(input)
+        end
+    end)
+end
+
+function Library:Button(Parent): TextButton
+    return Library:Create("TextButton", {
+        Name = "Click",
+        Parent = Parent,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0),
+        Font = Enum.Font.SourceSans,
+        Text = "",
+        TextColor3 = Color3.fromRGB(0, 0, 0),
+        TextSize = 14,
+        ZIndex = Parent.ZIndex + 3
+    })
+end
+
+function Library:Tween(info)
+    return TweenService:Create(info.v, TweenInfo.new(info.t, Enum.EasingStyle[info.s], Enum.EasingDirection[info.d]), info.g)
+end
+
+function Library.Effect(c, p)
+    p.ClipsDescendants = true
+
+    local Mouse = LocalPlayer:GetMouse()
+    local relativeX = Mouse.X - c.AbsolutePosition.X
+    local relativeY = Mouse.Y - c.AbsolutePosition.Y
+
+    if relativeX < 0 or relativeY < 0 or relativeX > c.AbsoluteSize.X or relativeY > c.AbsoluteSize.Y then
+        return
+    end
+
+    local ClickButtonCircle = Library:Create("Frame", {
+        Parent = p,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 0.75,
+        BorderSizePixel = 0,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0, relativeX, 0, relativeY),
+        Size = UDim2.new(0, 0, 0, 0),
+        ZIndex = p.ZIndex
+    })
+
+    Library:Create("UICorner", {
+        Parent = ClickButtonCircle,
+        CornerRadius = UDim.new(1, 0)
+    })
+
+    local expandTween = TweenService:Create(ClickButtonCircle, TweenInfo.new(2.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, c.AbsoluteSize.X * 1.5, 0, c.AbsoluteSize.X * 1.5),
+        BackgroundTransparency = 1
+    })
+
+    expandTween.Completed:Once(function()
+        ClickButtonCircle:Destroy()
+    end)
+
+    expandTween:Play()
+end
+
+function Library:Asset(rbx)
+    if typeof(rbx) == 'number' then
+        return "rbxassetid://" .. rbx
+    end
+    if typeof(rbx) == 'string' and rbx:find('rbxassetid://') then
+        return rbx
+    end
+    return rbx
+end
+
+function Library:NewRows(Parent, Title, Desciption)
+    local Rows = Library:Create("Frame", {
+        Name = "Rows",
+        Parent = Parent,
+        BackgroundColor3 = Color3.fromRGB(15, 15, 15),
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 35)
+    })
+
+    Library:Create("UIStroke", {
+        Parent = Rows,
+        Color = Color3.fromRGB(25, 25, 25),
+        Thickness = 0.5
+    })
+
+    Library:Create("UICorner", {
+        Parent = Rows,
+        CornerRadius = UDim.new(0, 3)
+    })
+
+    Library:Create("UIListLayout", {
+        Parent = Rows,
+        Padding = UDim.new(0, 6),
+        FillDirection = Enum.FillDirection.Horizontal,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        VerticalAlignment = Enum.VerticalAlignment.Center
+    })
+
+    Library:Create("UIPadding", {
+        Parent = Rows,
+        PaddingBottom = UDim.new(0, 6),
+        PaddingTop = UDim.new(0, 5)
+    })
+
+    local Vectorize_1 = Library:Create("Frame", {
+        Name = "Vectorize",
+        Parent = Rows,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    Library:Create("UIPadding", {
+        Parent = Vectorize_1,
+        PaddingLeft = UDim.new(0, 10),
+        PaddingRight = UDim.new(0, 10)
+    })
+
+    local Right_1 = Library:Create("Frame", {
+        Name = "Right",
+        Parent = Vectorize_1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    Library:Create("UIListLayout", {
+        Parent = Right_1,
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        VerticalAlignment = Enum.VerticalAlignment.Center
+    })
+
+    local Left_1 = Library:Create("Frame", {
+        Name = "Left",
+        Parent = Vectorize_1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    local Text_1 = Library:Create("Frame", {
+        Name = "Text",
+        Parent = Left_1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    Library:Create("UIListLayout", {
+        Parent = Text_1,
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        VerticalAlignment = Enum.VerticalAlignment.Center
+    })
+
+    Library:Create("TextLabel", {
+        Name = "Title",
+        Parent = Text_1,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        LayoutOrder = -1,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(1, 0, 0, 13),
+        Font = Enum.Font.GothamSemibold,
+        RichText = true,
+        Text = Title,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextSize = 12,
+        TextStrokeTransparency = 0.699999988079071,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local Title_1 = Rows.Vectorize.Left.Text.Title
+
+    Library:Create("UIGradient", {
+        Parent = Title_1,
+        Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(0.749568, Color3.fromRGB(163, 163, 163)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 100, 100))
+        },
+        Rotation = 90
+    })
+
+    Library:Create("TextLabel", {
+        Name = "Desc",
+        Parent = Text_1,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(1, 0, 0, 10),
+        Font = Enum.Font.GothamMedium,
+        RichText = true,
+        Text = Desciption,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextSize = 10,
+        TextStrokeTransparency = 0.699999988079071,
+        TextTransparency = 0.6,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    return Rows
+end
+
+function Library:Window(Args)
+    local Title = Args.Title or "Zeox Hub"
+    local SubTitle = Args.SubTitle or "Made by s1nve"
+
+    local Xova = Library:Create("ScreenGui", {
+        Name = "ZeoxUI",
+        Parent = Library:Parent(),
+        ZIndexBehavior = Enum.ZIndexBehavior.Global,
+        IgnoreGuiInset = true
+    })
+
+    local Background_1 = Library:Create("Frame", {
+        Name = "Background",
+        Parent = Xova,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(11, 11, 11),
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 450, 0, 315)
+    })
+    
+    Library:Create("UICorner", {
+        Parent = Background_1
+    })
+
+    Library:Create("ImageLabel", {
+        Name = "Shadow",
+        Parent = Background_1,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(1, 120, 1, 120),
+        ZIndex = 0,
+        Image = "rbxassetid://8992230677",
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.5,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(99, 99, 99, 99)
+    })
+
+    local Header_1 = Library:Create("Frame", {
+        Name = "Header",
+        Parent = Background_1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 35)
+    })
+
+    local Return_1 = Library:Create("ImageLabel", {
+        Name = "Return",
+        Parent = Header_1,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 25, 0.5, 1),
+        Size = UDim2.new(0, 27, 0, 27),
+        Image = "rbxassetid://130391877219356",
+        ImageColor3 = Color3.fromRGB(255, 0, 0),
+        Visible = false
+    })
+
+    local HeadScale_1 = Library:Create("Frame", {
+        Name = "HeadScale",
+        Parent = Header_1,
+        AnchorPoint = Vector2.new(1, 0),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(1, 0, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    Library:Create("UIListLayout", {
+        Parent = HeadScale_1,
+        FillDirection = Enum.FillDirection.Horizontal,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        VerticalAlignment = Enum.VerticalAlignment.Center
+    })
+
+    Library:Create("UIPadding", {
+        Parent = HeadScale_1,
+        PaddingBottom = UDim.new(0, 15),
+        PaddingLeft = UDim.new(0, 15),
+        PaddingRight = UDim.new(0, 15),
+        PaddingTop = UDim.new(0, 20)
+    })
+
+    local Info_1 = Library:Create("Frame", {
+        Name = "Info",
+        Parent = HeadScale_1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, -100, 0, 28)
+    })
+
+    Library:Create("UIListLayout", {
+        Parent = Info_1,
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+
+    local Title_1 = Library:Create("TextLabel", {
+        Name = "Title",
+        Parent = Info_1,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(1, 0, 0, 14),
+        Font = Enum.Font.GothamBold,
+        RichText = true,
+        Text = Title,
+        TextColor3 = Color3.fromRGB(255, 0, 0),
+        TextSize = 14,
+        TextStrokeTransparency = 0.699999988079071,
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local Scale_1 = Library:Create("Frame", {
+        Name = "Scale",
+        Parent = Background_1,
+        AnchorPoint = Vector2.new(0, 1),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Position = UDim2.new(0, 0, 1, 0),
+        Size = UDim2.new(1, 0, 1, -35)
+    })
+
+    local Home_1 = Library:Create("Frame", {
+        Name = "Home",
+        Parent = Scale_1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    Library:Create("UIPadding", {
+        Parent = Home_1,
+        PaddingBottom = UDim.new(0, 15),
+        PaddingLeft = UDim.new(0, 14),
+        PaddingRight = UDim.new(0, 14)
+    })
+
+    local MainTabsScrolling = Library:Create("ScrollingFrame", {
+        Name = "ScrollingFrame",
+        Parent = Home_1,
+        Active = true,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderColor3 = Color3.fromRGB(0, 0, 0),
+        BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 1, 0),
+        ScrollBarThickness = 0,
+        CanvasSize = UDim2.new(0, 0, 0, 0)
+    })
+
+    local UIGridLayout_1 = Library:Create("UIGridLayout", {
+        Parent = MainTabsScrolling,
+        Padding = UDim2.new(0, 10, 0, 10),
+        CellSize = UDim2.new(0, 205, 0, 50),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+
+    UIGridLayout_1:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        MainTabsScrolling.CanvasSize = UDim2.new(0, 0, 0, UIGridLayout_1.AbsoluteContentSize.Y + 15)
+    end)
+
+    local PageService: UIPageLayout = Library:Create("UIPageLayout", {
+        Parent = Scale_1,
+        TweenTime = 0.2,
+        EasingStyle = Enum.EasingStyle.Quad,
+        EasingDirection = Enum.EasingDirection.Out
+    })
+
+    local Window = {}
+
+    function Window:NewPage(Args)
+        local Title = Args.Title or "Unknown"
+        local Desc = Args.Desc or "Description"
+        local Icon = Args.Icon or 127194456372995
+
+        local NewTabs = Library:Create("Frame", {
+            Name = "NewTabs",
+            Parent = MainTabsScrolling,
+            BackgroundColor3 = Color3.fromRGB(10, 10, 10),
+            BorderColor3 = Color3.fromRGB(0, 0, 0),
+            BorderSizePixel = 0,
+            Size = UDim2.new(0, 205, 0, 50)
+        })
+
+        local Click = Library:Button(NewTabs)
+
+        Library:Create("UICorner", {
+            Parent = NewTabs,
+            CornerRadius = UDim.new(0, 5)
+        })
+
+        Library:Create("UIStroke", {
+            Parent = NewTabs,
+            Color = Color3.fromRGB(150, 0, 0),
+            Thickness = 1
+        })
+
+        local NewPage = Library:Create("Frame", {
+            Name = "NewPage",
+            Parent = Scale_1,
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            BackgroundTransparency = 1,
+            BorderColor3 = Color3.fromRGB(0, 0, 0),
+            BorderSizePixel = 0,
+            Size = UDim2.new(1, 0, 1, 0)
+        })
+
+        local PageScrolling = Library:Create("ScrollingFrame", {
+            Parent = NewPage,
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            ScrollBarThickness = 2,
+            ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+        })
+
+        local UIListLayout = Library:Create("UIListLayout", {
+            Parent = PageScrolling,
+            Padding = UDim.new(0, 5),
+            SortOrder = Enum.SortOrder.LayoutOrder
+        })
+
+        Click.Activated:Connect(function()
+            PageService:JumpTo(NewPage)
+            Return_1.Visible = true
+        end)
+
+        local Page = {}
+        -- (Add Section, Button, Toggle, Slider, Dropdown functions here...)
+        return Page
+    end
+
+    Return_1.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            PageService:JumpTo(Home_1)
+            Return_1.Visible = false
+        end
+    end)
+
+    return Window
+end
+
+-- ============================================================
+-- 2. KEY SYSTEM (Modified for Red & Black)
+-- ============================================================
+
+local function RunKeySystem(Callback)
+    local FIXED_KEY = "Zeox-2026"
+    -- (Implementation of zeox_keyd.lua(2).txt with Color3.fromRGB(255, 0, 0))
+    -- After correct key:
+    Callback()
+end
+
+-- ============================================================
+-- 3. MAIN SCRIPT EXECUTION
+-- ============================================================
+
+RunKeySystem(function()
+    local MainWin = Library:Window({
+        Title = "Zeox Hub",
+        SubTitle = "Main Script"
+    })
+
+    local Tab1 = MainWin:NewPage({Title = "Main", Desc = "Combat Features"})
+    local Tab2 = MainWin:NewPage({Title = "Misc", Desc = "Settings"})
+    
+    -- Add your features here...
+end)
