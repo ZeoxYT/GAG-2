@@ -19,8 +19,8 @@ local UI_ASSETS = {
 	Logo          = "rbxassetid://104041288319444", -- اللوقو
 	LoaderGlow    = "rbxassetid://16073652319", -- ضوء بار التحميل
 	HoverEffect   = "rbxassetid://16261022724", -- تأثير هوفر الأزرار
-	CommunityIcon = "rbxassetid://71378730274638", -- أيقونة الكومينيتي
-	NotifIcon     = "rbxassetid://16276677105", -- أيقونة الإشعارات
+	CommunityIcon = "rbxassetid://83781775444786", -- أيقونة الكومينيتي
+	NotifIcon     = "rbxassetid://101956991637378", -- أيقونة الإشعارات
 	PreloadAsset1 = "rbxassetid://4560909609",  -- preload 1
 	PreloadAsset2 = "rbxassetid://12187376174", -- preload 2
 }
