@@ -759,33 +759,35 @@ do
 	end
 
 	local do_check_key = function(key)
-		key = key:gsub("[\r\n%z]", " "):gsub("[ \t]", ""):gsub("[ \n]", ""):gsub("[ \t]+%f[\r\n%z]", "")
+	key = key:gsub("[\r\n%z]", " "):gsub("[ \t]", ""):gsub("[ \n]", ""):gsub("[ \t]+%f[\r\n%z]", "")
+
 	if key == FIXED_KEY then
-	StarterGui:SetCore("SendNotification", {
-		Title = "Key System",
-		Text = "Key Correct! Loading...",
-		Icon = UI_ASSETS.NotifIcon
-	})
+		StarterGui:SetCore("SendNotification", {
+			Title = "Key System",
+			Text = "Key Correct! Loading...",
+			Icon = UI_ASSETS.NotifIcon
+		})
 
-	TweenService:Create(GET_KEY, INFO_DOT25_QUAD, {
-		GroupTransparency = 1
-	}):Play()
+		TweenService:Create(GET_KEY, INFO_DOT25_QUAD, {
+			GroupTransparency = 1
+		}):Play()
 
-	task.delay(0.2, function()
-		destroyUI()
+		task.delay(0.2, function()
+			destroyUI()
+			loadstring(game:HttpGet("https://script.zeox.xyz/raw/srjfe257fg24vr37.lua"))()
+		end)
 
-		-- تشغيل السكربت بعد نجاح المفتاح
-		loadstring(game:HttpGet("https://script.zeox.xyz/raw/srjfe257fg24vr37.lua"))()
-	end)
-
-else
-	StarterGui:SetCore("SendNotification", {
-		Title = "Key System",
-		Text = "Invalid Key! Please try again.",
-		Icon = UI_ASSETS.NotifIcon
-	})
-		end
-
+	else
+		StarterGui:SetCore("SendNotification", {
+			Title = "Key System",
+			Text = "Invalid Key! Please try again.",
+			Icon = UI_ASSETS.NotifIcon
+		})
+	end
+	end
+	Submit.Activated:Connect(function()
+	do_check_key(Frame.Textbox.Text)
+end)
     Support.Activated:Once(function()
         setclipboard("https://discord.gg/row")
         StarterGui:SetCore("SendNotification",{
